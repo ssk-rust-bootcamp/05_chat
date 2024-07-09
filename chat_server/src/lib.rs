@@ -1,5 +1,7 @@
 mod config;
+mod error;
 mod handlers;
+mod models;
 use std::{ops::Deref, sync::Arc};
 
 use axum::{
