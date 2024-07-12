@@ -13,6 +13,11 @@ CREATE TABLE IF NOT EXISTS workspaces(
 ALTER TABLE users
   ADD COLUMN ws_id bigint REFERENCES workspaces(id);
 
+
+ALTER TABLE chats
+  ADD COLUMN ws_id bigint REFERENCES workspaces(id);
+
+
 -- add super user 0 and workspace 0
 BEGIN;
 INSERT INTO users(id, fullname, email, password_hash)

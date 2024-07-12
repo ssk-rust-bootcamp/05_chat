@@ -102,7 +102,21 @@ fn verify_password(password: &str, password_hash: &str) -> Result<bool, AppError
     Ok(is_valid)
 }
 impl ChatUser {
-    // pub async fn fetch_all(user:&user)
+    pub async fn fetch_by_ids(ids: &[i64], pool: &PgPool) -> Result<Vec<Self>, AppError> {
+        let users = sqlx::query_as("SELECT * FROM users WHERE id=ANY($1)")
+            .bind(ids)
+            .fetch_all(pool)
+            .await?;
+        Ok(users)
+    }
+
+    pub async fn fetch_all(ws_id: u64, pool: &PgPool) -> Result<Vec<Self>, AppError> {
+        let users = sqlx::query_as("SELECT * FROM users WHERE ws_id=$1")
+            .bind(ws_id as i64)
+            .fetch_all(pool)
+            .await?;
+        Ok(users)
+    }
 }
 
 #[cfg(test)]
@@ -143,12 +157,11 @@ impl User {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
 
     use anyhow::Result;
-    use sqlx_db_tester::TestPg;
 
     use super::*;
+    use crate::test_util::get_test_pool;
 
     #[test]
     fn hash_password_and_verify_should_work() -> Result<()> {
@@ -160,11 +173,7 @@ mod tests {
     }
     #[tokio::test]
     async fn create_duplicate_user_should_fail() -> Result<()> {
-        let tdb = TestPg::new(
-            "postgres://root:root@localhost:5432".to_string(),
-            Path::new("../migrations"),
-        );
-        let pool = tdb.get_pool().await;
+        let (_tdb, pool) = get_test_pool(None).await;
         let input = CreateUser::new("none", "test user", "test@test.com", "password123");
         let user = User::create(&input, &pool).await?;
         assert_eq!(user.email, "test@test.com");
@@ -182,11 +191,7 @@ mod tests {
 
     #[tokio::test]
     async fn create_and_verify_user_should_work() -> Result<()> {
-        let tdb = TestPg::new(
-            "postgres://root:root@localhost:5432".to_string(),
-            Path::new("../migrations"),
-        );
-        let pool = tdb.get_pool().await;
+        let (_tdb, pool) = get_test_pool(None).await;
         let email = "test@test.com";
         let name = "test user";
         let password = "password123";

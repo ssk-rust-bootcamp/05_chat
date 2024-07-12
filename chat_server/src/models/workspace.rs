@@ -59,21 +59,17 @@ impl Workspace {
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
 
     use anyhow::Result;
-    use sqlx_db_tester::TestPg;
 
     use super::*;
-    use crate::models::{CreateUser, User};
+    use crate::{
+        models::{CreateUser, User},
+        test_util::get_test_pool,
+    };
     #[tokio::test]
     async fn workspace_should_create_and_set_owner() -> Result<()> {
-        let tdb = TestPg::new(
-            "postgres://root:root@localhost:5432".to_string(),
-            Path::new("../migrations"),
-        );
-        let pool = tdb.get_pool().await;
-
+        let (_tdb, pool) = get_test_pool(None).await;
         let ws = Workspace::create("test", 0, &pool).await?;
         let input = CreateUser::new(&ws.name, "test", "123456@qq.com", "password1233");
         let user = User::create(&input, &pool).await?;
@@ -89,11 +85,7 @@ mod tests {
 
     #[tokio::test]
     async fn workspace_should_find_by_name() -> Result<()> {
-        let tdb = TestPg::new(
-            "postgres://root:root@localhost:5432".to_string(),
-            Path::new("../migrations"),
-        );
-        let pool = tdb.get_pool().await;
+        let (_tdb, pool) = get_test_pool(None).await;
         let _ws = Workspace::create("test", 0, &pool).await?;
         let ws = Workspace::find_by_name("test", &pool).await?;
         assert_eq!(ws.unwrap().name, "test");
@@ -102,11 +94,7 @@ mod tests {
 
     #[tokio::test]
     async fn workspace_should_fetch_all_chat_users() -> Result<()> {
-        let tdb = TestPg::new(
-            "postgres://root:root@localhost:5432".to_string(),
-            Path::new("../migrations"),
-        );
-        let pool = tdb.get_pool().await;
+        let (_tdb, pool) = get_test_pool(None).await;
 
         let ws = Workspace::create("test", 0, &pool).await?;
         let input = CreateUser::new(&ws.name, "test1", "123456@qq.com", "password1233");

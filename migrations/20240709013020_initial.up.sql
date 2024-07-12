@@ -14,18 +14,17 @@ CREATE TABLE IF NOT EXISTS users(
 --create index for users for email
 CREATE Unique index if NOT EXISTS email_index On users(email);
 
--- create chat type : single ,group ,private_channel ,public_channel
-CREATE type  chat_type AS ENUM  (
-    'single',
-    'group',
-    'private_channel',
-    'public_channel'
+-- create chat type: single, group, private_channel, public_channel
+CREATE TYPE chat_type AS ENUM(
+  'single',
+  'group',
+  'private_channel',
+  'public_channel'
 );
-
 -- create chat table
 CREATE TABLE IF NOT EXISTS chats(
     id bigserial primary key,
-    name varchar(128) NOT NULL Unique,
+    name varchar(64) ,
     type chat_type NOT NULL,
     -- user id list
     members bigint [] NOT NULL,
@@ -35,13 +34,11 @@ CREATE TABLE IF NOT EXISTS chats(
 -- create message table
 CREATE TABLE IF NOT EXISTS messages(
     id bigserial primary key,
-    chat_id bigint NOT Null,
-    sender_id bigint NOT Null,
+    chat_id bigint NOT Null references chats(id),
+    sender_id bigint NOT Null references users(id),
     content text NOT Null,
     images text [],
-    created_at timestamptz   default Current_timestamp,
-    foreign key (chat_id) references chats(id),
-    foreign key (sender_id) references users(id)
+    created_at timestamptz   default Current_timestamp
 );
 
 -- create index for messages for chat_id and created_at order by created_at desc

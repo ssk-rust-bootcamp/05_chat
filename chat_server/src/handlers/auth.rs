@@ -82,18 +82,17 @@ mod tests {
     async fn signin_should_work() -> Result<()> {
         let config = AppConfig::load()?;
         let (_tdb, state) = AppState::new_for_test(config).await?;
-        let name = "Alice";
-        let email = "alice@acme.org";
-        let password = "Hunter42";
-        let user = CreateUser::new("none", name, email, password);
-        User::create(&user, &state.pool).await?;
+        let email = "tchen@acme.org";
+        let password = "123456";
+
         let input = SigninUser::new(email, password);
         let ret = signin_handler(State(state), Json(input))
             .await?
             .into_response();
+
         assert_eq!(ret.status(), StatusCode::OK);
         let body = ret.into_body().collect().await?.to_bytes();
-        let ret: AuthOutput = serde_json::from_slice(&body)?;
+        let ret = serde_json::from_slice::<AuthOutput>(&body)?;
         assert_ne!(ret.token, "");
 
         Ok(())
