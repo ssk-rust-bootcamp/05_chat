@@ -20,6 +20,7 @@ pub async fn verify_token(State(state): State<AppState>, req: Request, next: Nex
             let token = bearer.token();
             match state.dk.verify(token) {
                 Ok(user) => {
+                    eprintln!("user: {}", user.fullname);
                     let mut req = Request::from_parts(parts, body);
                     req.extensions_mut().insert(user);
                     req
@@ -48,15 +49,14 @@ mod tests {
     use tower::ServiceExt;
 
     use super::*;
-    use crate::{models::User, AppConfig};
+    use crate::models::User;
     async fn handler(_req: Request) -> impl IntoResponse {
         (StatusCode::OK, "ok")
     }
 
     #[tokio::test]
     async fn verify_token_middleware_should_work() -> Result<()> {
-        let config = AppConfig::load()?;
-        let (_tdb, state) = AppState::new_for_test(config).await?;
+        let (_tdb, state) = AppState::new_for_test().await?;
 
         let user = User::new(1, "ssk", "1234@qq.com");
         let token = state.ek.sign(user)?;

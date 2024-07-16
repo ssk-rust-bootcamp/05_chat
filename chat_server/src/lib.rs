@@ -20,7 +20,7 @@ use handlers::{
     list_chat_users_handler, list_message_handler, send_message_handler, signin_handler, signup_handler,
     update_chat_handler, upload_handler,
 };
-use middlewares::{set_layer, verify_token};
+use middlewares::{set_layer, verify_chat, verify_token};
 pub use models::*;
 use sqlx::PgPool;
 use utils::{DecodingKey, EncodingKey};
@@ -46,7 +46,7 @@ impl Deref for AppState {
 }
 
 impl AppState {
-    pub async fn new(config: AppConfig) -> Result<Self, AppError> {
+    pub async fn try_new(config: AppConfig) -> Result<Self, AppError> {
         let dk = DecodingKey::load(&config.auth.pk).context("load pk failed")?;
         let ek = EncodingKey::load(&config.auth.sk).context("load sk failed")?;
         let pool = PgPool::connect(&config.server.db_url)
@@ -66,21 +66,27 @@ impl fmt::Debug for AppStateInner {
 }
 
 pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
-    let state = AppState::new(config).await?;
-    let api = Router::new()
-        .route("/users", get(list_chat_users_handler))
-        .route("/chat", get(list_chat_handler).post(create_chat_handler))
+    let state = AppState::try_new(config).await?;
+
+    let chat = Router::new()
         .route(
-            "/chat/:id",
+            "/:id",
             get(get_chat_handler)
                 .patch(update_chat_handler)
                 .delete(delete_chat_handler)
                 .post(send_message_handler),
         )
-        .route("/chat/:id/message", get(list_message_handler))
+        .route("/:id/messages", get(list_message_handler))
+        .layer(from_fn_with_state(state.clone(), verify_chat))
+        .route("/", get(list_chat_handler).post(create_chat_handler));
+
+    let api = Router::new()
+        .route("/users", get(list_chat_users_handler))
+        .nest("/chats", chat)
         .route("/upload", post(upload_handler))
         .route("/files/:ws_id/*path", get(file_handler))
         .layer(from_fn_with_state(state.clone(), verify_token))
+        // routes doesn't need token verification
         .route("/signin", post(signin_handler))
         .route("/signup", post(signup_handler));
 
@@ -88,6 +94,7 @@ pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
         .route("/", get(index_handler))
         .nest("/api", api)
         .with_state(state);
+
     Ok(set_layer(app))
 }
 
@@ -99,7 +106,8 @@ mod test_util {
     use super::*;
 
     impl AppState {
-        pub async fn new_for_test(config: AppConfig) -> Result<(TestPg, Self), AppError> {
+        pub async fn new_for_test() -> Result<(TestPg, Self), AppError> {
+            let config = AppConfig::load()?;
             let dk = DecodingKey::load(&config.auth.pk).context("load pk failed")?;
             let ek = EncodingKey::load(&config.auth.sk).context("load sk failed")?;
             let post = config.server.db_url.rfind('/').expect("invalid db_url");
