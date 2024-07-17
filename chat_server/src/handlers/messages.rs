@@ -4,10 +4,11 @@ use axum::{
     response::IntoResponse,
     Extension, Json,
 };
+use chat_core::User;
 use tokio::fs;
 use tracing::{info, warn};
 
-use crate::{error::AppError, AppState, ChatFile, CreateMessage, ListMessage, User};
+use crate::{error::AppError, AppState, ChatFile, CreateMessage, ListMessages};
 
 pub(crate) async fn send_message_handler(
     Extension(user): Extension<User>,
@@ -21,7 +22,7 @@ pub(crate) async fn send_message_handler(
 pub(crate) async fn list_message_handler(
     State(state): State<AppState>,
     Path(id): Path<u64>,
-    Query(input): Query<ListMessage>,
+    Query(input): Query<ListMessages>,
 ) -> Result<impl IntoResponse, AppError> {
     let messages = state.list_message(input, id).await?;
     Ok(Json(messages))

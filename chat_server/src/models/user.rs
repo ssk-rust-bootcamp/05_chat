@@ -5,12 +5,10 @@ use argon2::{
     password_hash::{rand_core::OsRng, SaltString},
     Argon2, PasswordHash, PasswordVerifier,
 };
+use chat_core::{ChatUser, User};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
 
-use super::ChatUser;
 use crate::error::AppError;
-use crate::models::User;
 use crate::AppState;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -127,23 +125,23 @@ fn verify_password(password: &str, password_hash: &str) -> Result<bool, AppError
         .is_ok();
     Ok(is_valid)
 }
-impl ChatUser {
-    pub async fn fetch_by_ids(ids: &[i64], pool: &PgPool) -> Result<Vec<Self>, AppError> {
-        let users = sqlx::query_as("SELECT * FROM users WHERE id=ANY($1)")
-            .bind(ids)
-            .fetch_all(pool)
-            .await?;
-        Ok(users)
-    }
+// impl ChatUser {
+//     pub async fn fetch_by_ids(ids: &[i64], pool: &PgPool) -> Result<Vec<Self>, AppError> {
+//         let users = sqlx::query_as("SELECT * FROM users WHERE id=ANY($1)")
+//             .bind(ids)
+//             .fetch_all(pool)
+//             .await?;
+//         Ok(users)
+//     }
 
-    pub async fn fetch_all(ws_id: u64, pool: &PgPool) -> Result<Vec<Self>, AppError> {
-        let users = sqlx::query_as("SELECT * FROM users WHERE ws_id=$1")
-            .bind(ws_id as i64)
-            .fetch_all(pool)
-            .await?;
-        Ok(users)
-    }
-}
+//     pub async fn fetch_all(ws_id: u64, pool: &PgPool) -> Result<Vec<Self>, AppError> {
+//         let users = sqlx::query_as("SELECT * FROM users WHERE ws_id=$1")
+//             .bind(ws_id as i64)
+//             .fetch_all(pool)
+//             .await?;
+//         Ok(users)
+//     }
+// }
 
 #[cfg(test)]
 impl CreateUser {
@@ -167,19 +165,19 @@ impl SigninUser {
     }
 }
 
-#[cfg(test)]
-impl User {
-    pub fn new(id: i64, fullname: &str, email: &str) -> Self {
-        Self {
-            id,
-            ws_id: 0,
-            fullname: fullname.to_string(),
-            email: email.to_string(),
-            password_hash: None,
-            created_at: chrono::Utc::now(),
-        }
-    }
-}
+// #[cfg(test)]
+// impl User {
+//     pub fn new(id: i64, fullname: &str, email: &str) -> Self {
+//         Self {
+//             id,
+//             ws_id: 0,
+//             fullname: fullname.to_string(),
+//             email: email.to_string(),
+//             password_hash: None,
+//             created_at: chrono::Utc::now(),
+//         }
+//     }
+// }
 
 #[cfg(test)]
 mod tests {

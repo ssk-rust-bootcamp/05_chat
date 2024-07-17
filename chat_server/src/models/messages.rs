@@ -1,8 +1,9 @@
 use std::str::FromStr;
 
+use chat_core::Message;
 use serde::{Deserialize, Serialize};
 
-use crate::{error::AppError, AppState, ChatFile, Message};
+use crate::{error::AppError, AppState, ChatFile};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateMessage {
@@ -10,7 +11,7 @@ pub struct CreateMessage {
     pub files: Vec<String>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ListMessage {
+pub struct ListMessages {
     pub last_id: Option<u64>,
     pub limit: u64,
 }
@@ -48,7 +49,7 @@ impl AppState {
         Ok(message)
     }
 
-    pub async fn list_message(&self, input: ListMessage, chat_id: u64) -> Result<Vec<Message>, AppError> {
+    pub async fn list_message(&self, input: ListMessages, chat_id: u64) -> Result<Vec<Message>, AppError> {
         let last_id = input.last_id.unwrap_or(i64::MAX as _);
         let messages: Vec<Message> = sqlx::query_as(
             r#"
@@ -114,7 +115,7 @@ mod tests {
     #[tokio::test]
     async fn list_message_should_work() -> Result<()> {
         let (_tdb, state) = AppState::new_for_test().await?;
-        let input = ListMessage {
+        let input = ListMessages {
             last_id: None,
             limit: 6,
         };
@@ -124,7 +125,7 @@ mod tests {
 
         let last_id = messages.last().expect("last message should exists").id;
 
-        let input = ListMessage {
+        let input = ListMessages {
             last_id: Some(last_id as _),
             limit: 6,
         };

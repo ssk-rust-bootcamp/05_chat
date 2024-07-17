@@ -1,4 +1,5 @@
-use super::{ChatUser, Workspace};
+use chat_core::{ChatUser, Workspace};
+
 use crate::{error::AppError, AppState};
 #[allow(unused)]
 impl AppState {

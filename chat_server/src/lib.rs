@@ -3,7 +3,6 @@ mod error;
 mod handlers;
 mod middlewares;
 mod models;
-mod utils;
 use core::fmt;
 use std::{ops::Deref, sync::Arc};
 
@@ -13,6 +12,10 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use chat_core::{
+    middlewares::{set_layer, verify_token, TokenVerify},
+    DecodingKey, EncodingKey,
+};
 pub use config::AppConfig;
 use error::AppError;
 use handlers::{
@@ -20,10 +23,10 @@ use handlers::{
     list_chat_users_handler, list_message_handler, send_message_handler, signin_handler, signup_handler,
     update_chat_handler, upload_handler,
 };
-use middlewares::{set_layer, verify_chat, verify_token};
+use middlewares::verify_chat;
 pub use models::*;
 use sqlx::PgPool;
-use utils::{DecodingKey, EncodingKey};
+use tokio::fs;
 
 #[derive(Debug, Clone)]
 pub(crate) struct AppState {
@@ -47,6 +50,9 @@ impl Deref for AppState {
 
 impl AppState {
     pub async fn try_new(config: AppConfig) -> Result<Self, AppError> {
+        let _ = fs::create_dir_all(&config.server.base_dir)
+            .await
+            .context("create base_dir failed");
         let dk = DecodingKey::load(&config.auth.pk).context("load pk failed")?;
         let ek = EncodingKey::load(&config.auth.sk).context("load sk failed")?;
         let pool = PgPool::connect(&config.server.db_url)
@@ -85,7 +91,7 @@ pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
         .nest("/chats", chat)
         .route("/upload", post(upload_handler))
         .route("/files/:ws_id/*path", get(file_handler))
-        .layer(from_fn_with_state(state.clone(), verify_token))
+        .layer(from_fn_with_state(state.clone(), verify_token::<AppState>))
         // routes doesn't need token verification
         .route("/signin", post(signin_handler))
         .route("/signup", post(signup_handler));
@@ -98,8 +104,17 @@ pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
     Ok(set_layer(app))
 }
 
+impl TokenVerify for AppState {
+    type Error = AppError;
+
+    fn verify(&self, token: &str) -> Result<chat_core::User, Self::Error> {
+        Ok(self.dk.verify(token)?)
+    }
+}
+
 #[cfg(test)]
 mod test_util {
+    use chat_core::{DecodingKey, EncodingKey};
     use sqlx::Executor;
     use sqlx_db_tester::TestPg;
 
@@ -131,7 +146,7 @@ mod test_util {
 
         // run postgres sql to insert test data
 
-        let sql = include_str!("../fixtures/test.sql").split(";");
+        let sql = include_str!("../fixtures/test.sql").split(';');
         let mut ts = pool.begin().await.expect("begin transaction failed");
 
         for s in sql {

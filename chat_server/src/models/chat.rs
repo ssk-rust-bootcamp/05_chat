@@ -1,7 +1,7 @@
+use chat_core::{Chat, ChatType};
 use serde::{Deserialize, Serialize};
 
-use super::{Chat, ChatUser};
-use crate::{error::AppError, models::ChatType, AppState};
+use crate::{error::AppError, AppState};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CreateChat {
@@ -24,7 +24,7 @@ impl AppState {
             ));
         }
         // verify if all members exists
-        let users = ChatUser::fetch_by_ids(&input.members, &self.pool).await?;
+        let users = self.fetch_chat_user_by_ids(&input.members).await?;
         if users.len() != len {
             return Err(AppError::CreateChatError("Some members do not exist".to_string()));
         }

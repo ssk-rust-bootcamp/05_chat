@@ -10,5 +10,6 @@
             "username": "root",
             "password": "root"
         }
-    ]
+    ],
+    "files.eol": "\r\n"
 }
