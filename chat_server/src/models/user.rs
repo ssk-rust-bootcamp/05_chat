@@ -12,7 +12,7 @@ use utoipa::ToSchema;
 use crate::error::AppError;
 use crate::AppState;
 
-#[derive(Debug, Clone,ToSchema, Serialize, Deserialize)]
+#[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
 pub struct CreateUser {
     pub fullname: String,
     pub email: String,
@@ -20,7 +20,7 @@ pub struct CreateUser {
     pub password: String,
 }
 
-#[derive(Debug, Clone,ToSchema, Serialize, Deserialize)]
+#[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
 pub struct SigninUser {
     pub email: String,
     pub password: String,

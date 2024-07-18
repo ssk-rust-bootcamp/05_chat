@@ -5,7 +5,6 @@ use chat_core::User;
 use crate::models::CreateChat;
 use crate::{error::AppError, AppState};
 
-
 #[utoipa::path(
     get,
     path = "/api/chats",

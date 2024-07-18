@@ -8,7 +8,7 @@ use crate::error::{AppError, ErrorOutput};
 use crate::models::{CreateUser, SigninUser};
 use crate::AppState;
 
-#[derive(Debug,ToSchema, Serialize, Deserialize)]
+#[derive(Debug, ToSchema, Serialize, Deserialize)]
 pub struct AuthOutput {
     token: String,
 }

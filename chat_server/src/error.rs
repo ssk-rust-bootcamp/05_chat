@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use utoipa::ToSchema;
 
-#[derive(Debug,ToSchema, Serialize, Deserialize)]
+#[derive(Debug, ToSchema, Serialize, Deserialize)]
 pub struct ErrorOutput {
     pub error: String,
 }
