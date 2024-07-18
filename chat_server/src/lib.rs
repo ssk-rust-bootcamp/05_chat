@@ -6,6 +6,7 @@ mod models;
 mod openapi;
 use core::fmt;
 use std::{ops::Deref, sync::Arc};
+use error::ErrorOutput;
 
 use anyhow::Context;
 use axum::{
@@ -77,7 +78,6 @@ pub async fn get_router(state: AppState) -> Result<Router, AppError> {
     // let state = AppState::try_new(config).await?;
 
     let chat = Router::new()
-    .openapi()
         .route(
             "/:id",
             get(get_chat_handler)
@@ -100,6 +100,7 @@ pub async fn get_router(state: AppState) -> Result<Router, AppError> {
         .route("/signup", post(signup_handler));
 
     let app = Router::new()
+        .openapi()
         .route("/", get(index_handler))
         .nest("/api", api)
         .with_state(state);
