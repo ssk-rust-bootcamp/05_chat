@@ -127,7 +127,7 @@ impl ChatServer {
         };
 
         ret.token = ret.signin().await?;
-        eprintln!("{:?}",ret);
+        eprintln!("{:?}", ret);
         Ok(ret)
     }
 
