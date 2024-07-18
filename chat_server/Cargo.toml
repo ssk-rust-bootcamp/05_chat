@@ -3,6 +3,12 @@ name = "chat_server"
 version = "0.1.0"
 edition = "2021"
 
+
+[features]
+default = []
+test-util = ["http-body-util", "sqlx-db-tester"]
+
+
 [dependencies]
 anyhow.workspace = true
 argon2 = { version = "0.5.3", features = ["std"] }
@@ -25,7 +31,8 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 uuid = { version = "1.10.0", features = ["v7", "serde"] }
 chat_core.workspace = true
+sqlx-db-tester = { version = "0.4.2", optional = true }
+http-body-util = { version = "0.1.1", optional = true }
 
 [dev-dependencies]
-http-body-util = "0.1.2"
-sqlx-db-tester = "0.4.2"
+chat_server = { workspace = true, features = ["test-util"] }

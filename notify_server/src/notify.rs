@@ -9,7 +9,7 @@ use tracing::{info, warn};
 use crate::AppSate;
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(tag = "type")]
+#[serde(tag = "event")]
 pub enum AppEvent {
     NewChat(Chat),
     AddToChat(Chat),

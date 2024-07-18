@@ -86,25 +86,17 @@ mod tests {
     #[tokio::test]
     async fn workspace_should_find_by_name() -> Result<()> {
         let (_tdb, state) = AppState::new_for_test().await?;
-        let _ws = state.create_workspace("test", 0).await?;
-        let ws = state.find_workspace_by_name("test").await?;
-        assert_eq!(ws.unwrap().name, "test");
+        let ws = state.find_workspace_by_name("acme").await?;
+        assert_eq!(ws.unwrap().name, "acme");
         Ok(())
     }
 
     #[tokio::test]
     async fn workspace_should_fetch_all_chat_users() -> Result<()> {
         let (_tdb, state) = AppState::new_for_test().await?;
-        let ws = state.create_workspace("test", 0).await?;
-        let input = CreateUser::new(&ws.name, "test1", "123456@qq.com", "password1233");
-        let user1 = state.create_user(&input).await?;
-        let input = CreateUser::new(&ws.name, "test2", "1234567@qq.com", "password1233");
-        let user2 = state.create_user(&input).await?;
-        let users = state.fetch_workspace_all_chat_users(ws.id as _).await?;
+        let users = state.fetch_chat_users(1).await?;
 
-        assert_eq!(users.len(), 2);
-        assert_eq!(users[0].id, user1.id);
-        assert_eq!(users[1].id, user2.id);
+        assert_eq!(users.len(), 5);
 
         Ok(())
     }

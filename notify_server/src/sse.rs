@@ -5,7 +5,6 @@ use axum::{
     response::{sse::Event, Sse},
     Extension,
 };
-use axum_extra::{headers, TypedHeader};
 use chat_core::User;
 use futures::Stream;
 use tokio::sync::broadcast;
@@ -18,9 +17,9 @@ const CHANNEL_CAPACITY: usize = 256;
 pub(crate) async fn sse_handler(
     Extension(user): Extension<User>,
     State(state): State<AppSate>,
-    TypedHeader(user_agent): TypedHeader<headers::UserAgent>,
+    // TypedHeader(user_agent): TypedHeader<headers::UserAgent>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    info!("`{}` connected to server", user_agent.as_str());
+    // info!("`{}` connected to server", user_agent.as_str());
     let user_id = user.id as u64;
     let users = &state.users;
     let rx = if let Some(tx) = users.get(&user_id) {

@@ -1,5 +1,5 @@
 [workspace]
-members = [ "chat_core","chat_server", "notify_server"]
+members = [ "chat_core","chat_server", "chat_test", "notify_server"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -26,3 +26,5 @@ jwt-simple = "0.12.9"
 tower = "0.4.13"
 tower-http = { version = "0.5.2", features = ["trace", "compression-full"] }
 chat_core = { path = "./chat_core" }
+chat_server = { path = "./chat_server" }
+notify_server = { path = "./notify_server" }

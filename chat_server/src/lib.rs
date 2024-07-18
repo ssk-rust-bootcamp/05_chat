@@ -29,12 +29,12 @@ use sqlx::PgPool;
 use tokio::fs;
 
 #[derive(Debug, Clone)]
-pub(crate) struct AppState {
+pub struct AppState {
     inner: Arc<AppStateInner>,
 }
 
 #[allow(unused)]
-pub(crate) struct AppStateInner {
+pub struct AppStateInner {
     pub(crate) config: AppConfig,
     pub(crate) dk: DecodingKey,
     pub(crate) ek: EncodingKey,
@@ -71,8 +71,8 @@ impl fmt::Debug for AppStateInner {
     }
 }
 
-pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
-    let state = AppState::try_new(config).await?;
+pub async fn get_router(state: AppState) -> Result<Router, AppError> {
+    // let state = AppState::try_new(config).await?;
 
     let chat = Router::new()
         .route(
@@ -112,7 +112,7 @@ impl TokenVerify for AppState {
     }
 }
 
-#[cfg(test)]
+#[cfg(feature = "test-util")]
 mod test_util {
     use chat_core::{DecodingKey, EncodingKey};
     use sqlx::Executor;
