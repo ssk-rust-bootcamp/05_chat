@@ -76,7 +76,6 @@ impl fmt::Debug for AppStateInner {
 
 pub async fn get_router(state: AppState) -> Result<Router, AppError> {
     // let state = AppState::try_new(config).await?;
-
     let chat = Router::new()
         .route(
             "/:id",
