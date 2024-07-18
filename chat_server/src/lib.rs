@@ -3,6 +3,7 @@ mod error;
 mod handlers;
 mod middlewares;
 mod models;
+mod openapi;
 use core::fmt;
 use std::{ops::Deref, sync::Arc};
 
@@ -25,6 +26,7 @@ use handlers::{
 };
 use middlewares::verify_chat;
 pub use models::*;
+use openapi::OpenApiRouter;
 use sqlx::PgPool;
 use tokio::fs;
 
@@ -75,6 +77,7 @@ pub async fn get_router(state: AppState) -> Result<Router, AppError> {
     // let state = AppState::try_new(config).await?;
 
     let chat = Router::new()
+    .openapi()
         .route(
             "/:id",
             get(get_chat_handler)
